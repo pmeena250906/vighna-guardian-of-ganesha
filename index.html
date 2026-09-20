@@ -1,0 +1,446 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" />
+  <title>VIGHNA: GUARDIAN OF GANESHA | Standalone Mythological Action Game</title>
+  <link rel="stylesheet" href="style.css" />
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@600;700;800;900&family=Outfit:wght@400;500;600;700;800&family=Rozha+One&display=swap" rel="stylesheet">
+</head>
+<body>
+
+  <!-- Main Game Container Frame -->
+  <div id="gameContainer">
+    <!-- Main Game Canvas -->
+    <canvas id="gameCanvas"></canvas>
+
+    <!-- Visual Overlays (Flashes & Cinematic Bars) -->
+    <div id="damageFlash" class="screen-fx"></div>
+    <div id="lightningFlash" class="screen-fx"></div>
+    <div id="gajaTransformFlash" class="screen-fx"></div>
+    <div id="cinematicTopBar" class="cinematic-bar top"></div>
+    <div id="cinematicBottomBar" class="cinematic-bar bottom"></div>
+
+    <!-- ================================================================
+         HUD OVERLAY (TOP & BOTTOM ACTION SYSTEM)
+         ================================================================ -->
+    <div id="hudOverlay" class="hud-container hidden">
+      <!-- Top Left: Player Status -->
+      <div class="hud-top-left">
+        <div class="player-badge">
+          <div class="guardian-title">
+            <span class="guardian-name">TEMPLE GUARDIAN</span>
+            <span class="guardian-rank" id="guardianRankBadge">GUARDIAN</span>
+          </div>
+          <!-- Health Bar -->
+          <div class="bar-container health-wrap">
+            <div class="bar-label-group">
+              <span class="bar-label">HEALTH</span>
+              <span class="bar-nums" id="hpText">120 / 120</span>
+            </div>
+            <div class="bar-track">
+              <div id="hpGhost" class="bar-ghost"></div>
+              <div id="hpFill" class="bar-fill hp-gradient" style="width: 100%;"></div>
+            </div>
+          </div>
+          <!-- Divine Energy Bar -->
+          <div class="bar-container energy-wrap">
+            <div class="bar-label-group">
+              <span class="bar-label">DIVINE ENERGY</span>
+              <span class="bar-nums" id="energyText">100 / 100</span>
+            </div>
+            <div class="bar-track">
+              <div id="energyFill" class="bar-fill energy-gradient" style="width: 100%;"></div>
+            </div>
+          </div>
+          <!-- Gaja Awakening Gauge -->
+          <div class="bar-container gaja-mini-wrap">
+            <div class="bar-label-group">
+              <span class="bar-label gold-label">GAJA AWAKENING</span>
+              <span class="bar-nums gold-nums" id="gajaText">0%</span>
+            </div>
+            <div class="bar-track gaja-track">
+              <div id="gajaFill" class="bar-fill gaja-gradient" style="width: 0%;"></div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Top Center: Area, Wave & Sacred Ward Banner -->
+      <div class="hud-top-center">
+        <div class="area-banner">
+          <div class="area-chapter" id="areaChapterText">AREA 01 / 05</div>
+          <div class="area-name" id="areaNameText">TEMPLE GATES</div>
+          <div class="assault-counter" id="assaultCounterText">WAVE 1/4 • 6 FOES</div>
+          <div class="sacred-ward-badge" id="sacredWardBadge">
+            <span class="ward-icon">☸</span> SACRED WARD ACTIVE
+          </div>
+        </div>
+      </div>
+
+      <!-- Top Right: Temple Integrity & Score -->
+      <div class="hud-top-right">
+        <div class="temple-status-card">
+          <div class="temple-integrity-header">
+            <span class="temple-title">TEMPLE INTEGRITY</span>
+            <span class="temple-percent" id="templePercentText">100%</span>
+          </div>
+          <div class="bar-track temple-track">
+            <div id="templeFill" class="bar-fill temple-gradient" style="width: 100%;"></div>
+          </div>
+          <div class="score-row">
+            <span class="score-label">SCORE</span>
+            <span class="score-val" id="scoreValText">0</span>
+          </div>
+        </div>
+
+        <!-- Utility Buttons -->
+        <div class="hud-utility-bar">
+          <button id="camToggleBtn" class="hud-btn" title="Cycle Camera (C)">
+            <span class="cam-icon">📹</span>
+            <span id="camLabelText" class="hud-btn-txt">CAM: ACTION</span>
+          </button>
+          <button id="soundToggleBtn" class="hud-btn icon-only" title="Toggle Sound (M)">
+            <span id="soundIcon">🔊</span>
+          </button>
+          <button id="pauseToggleBtn" class="hud-btn icon-only" title="Pause Game (ESC)">
+            <span>⏸</span>
+          </button>
+        </div>
+      </div>
+
+      <!-- Combat Feedback -->
+      <div class="combat-feedback-layer">
+        <div id="comboBanner" class="combo-badge hidden">
+          <span id="comboCount" class="combo-num">0</span>
+          <span class="combo-word">COMBO</span>
+          <span id="comboRating" class="combo-tag">DIVINE STRIKE!</span>
+        </div>
+        <div id="combatAnnounce" class="combat-announcement hidden"></div>
+      </div>
+
+      <!-- Boss HUD -->
+      <div id="bossHud" class="boss-hud-container hidden">
+        <div class="boss-title-row">
+          <span class="boss-skull">☠</span>
+          <span id="bossNameText" class="boss-name">GATE BREAKER</span>
+          <span id="bossSubtitleText" class="boss-subtitle">DEMONIC VIGHNA CHAMPION</span>
+          <span class="boss-phase-badge" id="bossPhaseBadge">PHASE 1</span>
+        </div>
+        <div class="bar-track boss-track">
+          <div id="bossHpGhost" class="bar-ghost"></div>
+          <div id="bossHpFill" class="bar-fill boss-gradient" style="width: 100%;"></div>
+        </div>
+      </div>
+
+      <!-- Bottom Action Bar (Desktop) -->
+      <div class="hud-bottom-bar desktop-only">
+        <div class="control-pill move-pill">
+          <div class="key-badge">WASD / ARROWS</div>
+          <div class="key-desc">MOVE</div>
+        </div>
+
+        <div class="ability-deck">
+          <div class="ability-card active" id="slotBlade" data-key="1">
+            <div class="ability-hotkey">1</div>
+            <div class="ability-icon-wrap blade-glow"><span class="ability-icon">⚔</span></div>
+            <div class="ability-info">
+              <div class="ability-name">Divine Blade</div>
+              <div class="ability-status" id="cdBladeText">READY</div>
+            </div>
+            <div class="cd-radial-overlay" id="cdOverlayBlade"></div>
+          </div>
+
+          <div class="ability-card locked" id="slotDash" data-key="2">
+            <div class="ability-hotkey">2</div>
+            <div class="ability-icon-wrap dash-glow"><span class="ability-icon">💨</span></div>
+            <div class="ability-info">
+              <div class="ability-name">Vayu Dash</div>
+              <div class="ability-status" id="cdDashText">AREA 2</div>
+            </div>
+            <div class="cd-radial-overlay" id="cdOverlayDash"></div>
+          </div>
+
+          <div class="ability-card locked" id="slotLightning" data-key="3">
+            <div class="ability-hotkey">3</div>
+            <div class="ability-icon-wrap lightning-glow"><span class="ability-icon">⚡</span></div>
+            <div class="ability-info">
+              <div class="ability-name">Lightning</div>
+              <div class="ability-status" id="cdLightningText">AREA 3</div>
+            </div>
+            <div class="cd-radial-overlay" id="cdOverlayLightning"></div>
+          </div>
+
+          <div class="ability-card locked" id="slotFire" data-key="4">
+            <div class="ability-hotkey">4</div>
+            <div class="ability-icon-wrap fire-glow"><span class="ability-icon">🔥</span></div>
+            <div class="ability-info">
+              <div class="ability-name">Agni Burst</div>
+              <div class="ability-status" id="cdFireText">AREA 3</div>
+            </div>
+            <div class="cd-radial-overlay" id="cdOverlayFire"></div>
+          </div>
+
+          <div class="ability-card gaja-card locked" id="slotGaja" data-key="G">
+            <div class="ability-hotkey gaja-hotkey">G</div>
+            <div class="ability-icon-wrap gaja-glow"><span class="ability-icon">🐘</span></div>
+            <div class="ability-info">
+              <div class="ability-name gold-glow-text">Gaja Form</div>
+              <div class="ability-status" id="cdGajaText">AREA 4</div>
+            </div>
+            <div class="cd-radial-overlay" id="cdOverlayGaja"></div>
+          </div>
+        </div>
+
+        <div class="action-buttons-group">
+          <div class="action-card" id="btnDodge">
+            <div class="action-icon">⇻</div>
+            <div class="action-meta">
+              <span class="action-title">DODGE</span>
+              <span class="action-key">SHIFT / SPACE</span>
+            </div>
+          </div>
+          <div class="action-card" id="btnHeavy">
+            <div class="action-icon">✦</div>
+            <div class="action-meta">
+              <span class="action-title">HEAVY</span>
+              <span class="action-key">K / R-CLICK</span>
+            </div>
+          </div>
+          <div class="action-card primary-action" id="btnLight">
+            <div class="action-icon">⚔</div>
+            <div class="action-meta">
+              <span class="action-title">ATTACK</span>
+              <span class="action-key">J / L-CLICK</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ==============================================================
+           MOBILE TOUCH CONTROLS OVERLAY
+           ============================================================== -->
+      <div id="mobileControls" class="mobile-controls-layer">
+        <!-- Virtual Joystick (Left Thumb) -->
+        <div id="touchJoystickContainer" class="touch-joystick-wrap">
+          <div id="touchJoystickBase" class="touch-joystick-base">
+            <div id="touchJoystickKnob" class="touch-joystick-knob"></div>
+          </div>
+        </div>
+
+        <!-- Touch Action Buttons (Right Thumb) -->
+        <div class="touch-actions-wrap">
+          <div class="touch-abilities-row">
+            <button id="touchBtnBlade" class="touch-btn touch-ability-btn blade-glow" title="Divine Blade">⚔</button>
+            <button id="touchBtnDash" class="touch-btn touch-ability-btn dash-glow" title="Vayu Dash">💨</button>
+            <button id="touchBtnLightning" class="touch-btn touch-ability-btn lightning-glow" title="Indra Lightning">⚡</button>
+            <button id="touchBtnFire" class="touch-btn touch-ability-btn fire-glow" title="Agni Burst">🔥</button>
+            <button id="touchBtnGaja" class="touch-btn touch-ability-btn gaja-glow" title="Gaja Form">🐘</button>
+          </div>
+          <div class="touch-main-actions-row">
+            <button id="touchBtnDodge" class="touch-btn touch-action-pill dodge-btn">DODGE</button>
+            <button id="touchBtnHeavy" class="touch-btn touch-action-pill heavy-btn">HEAVY</button>
+            <button id="touchBtnLight" class="touch-btn touch-action-circle attack-btn">ATTACK</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ================================================================
+         MAIN MENU SCREEN
+         ================================================================ -->
+    <div id="mainMenu" class="screen-overlay menu-screen active">
+      <div class="menu-bg-art" style="background-image: url('assets/menu_bg.jpg');"></div>
+      <div class="menu-fog-ambient"></div>
+      <div class="menu-particles-layer"></div>
+
+      <div class="menu-content-card">
+        <div class="myth-ornament-top">☸ ॐ ☸</div>
+        <h1 class="game-title">VIGHNA</h1>
+        <h2 class="game-subtitle">GUARDIAN OF GANESHA</h2>
+        <div class="game-tagline">PROTECT THE TEMPLE. AWAKEN THE DIVINE POWER.</div>
+
+        <div class="menu-buttons-list">
+          <button id="btnPlayGame" class="menu-btn primary-btn">
+            <span class="btn-flare"></span>
+            <span class="btn-text">START GAME</span>
+          </button>
+          <button id="btnHowToPlay" class="menu-btn secondary-btn">
+            <span class="btn-text">HOW TO PLAY</span>
+          </button>
+        </div>
+
+        <div class="menu-credits-footer">
+          <span>A SACRED MYTHOLOGICAL ACTION EXPERIENCE • STANDALONE BROWSER ENGINE</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- ================================================================
+         HOW TO PLAY MODAL
+         ================================================================ -->
+    <div id="howToPlayModal" class="screen-overlay modal-screen hidden">
+      <div class="modal-box">
+        <h2 class="modal-title">HOW TO PLAY</h2>
+        <div class="modal-body-scroll">
+          <div class="info-grid">
+            <div class="info-card">
+              <h3>⚔ CONTROLS</h3>
+              <p><strong>Desktop:</strong></p>
+              <ul>
+                <li><strong>Move:</strong> WASD or Arrow Keys</li>
+                <li><strong>Light Attack:</strong> Left Click or J</li>
+                <li><strong>Heavy Attack:</strong> Right Click or K</li>
+                <li><strong>Dodge / Dash:</strong> Shift or Space</li>
+                <li><strong>Divine Blade:</strong> Key 1</li>
+                <li><strong>Vayu Dash:</strong> Key 2</li>
+                <li><strong>Indra Lightning:</strong> Key 3</li>
+                <li><strong>Agni Burst:</strong> Key 4</li>
+                <li><strong>Gaja Form:</strong> Key G</li>
+                <li><strong>Change Camera:</strong> Key C</li>
+                <li><strong>Pause:</strong> ESC</li>
+              </ul>
+              <p style="margin-top:8px;"><strong>Mobile:</strong> Use the on-screen virtual joystick to move and tap the action buttons on the right to attack, dodge, and cast divine powers.</p>
+            </div>
+            <div class="info-card">
+              <h3>☸ TEMPLE INTEGRITY</h3>
+              <p>Enemies called <strong>Vighnas</strong> attack both the Guardian and the sacred temple shrine.</p>
+              <p>Intercept enemies before they shatter the <strong>Sacred Ward</strong>! If <strong>Temple Integrity</strong> reaches 0%, it is Game Over.</p>
+            </div>
+            <div class="info-card">
+              <h3>🐘 GAJA FORM</h3>
+              <p>Fill the Gaja Meter in battle by landing strikes and defeating foes. Press <strong>G</strong> to awaken the supernatural elephant-aspect titan with colossal ground slams, shockwaves, and invulnerability!</p>
+              <p><em>(Note: Gaja Form is the mortal champion's divine transformation, not Lord Ganesha)</em></p>
+            </div>
+            <div class="info-card">
+              <h3>🌊 WAVES & BOSSES</h3>
+              <p>Each of the 5 areas features: <strong>Wave 1, Wave 2, Wave 3, Elite Wave, and Boss Encounter</strong>. Defeat all 5 bosses to protect the temple!</p>
+            </div>
+          </div>
+        </div>
+        <button id="btnCloseHowTo" class="menu-btn primary-btn modal-close-btn">RETURN</button>
+      </div>
+    </div>
+
+    <!-- ================================================================
+         GAJA FORM AWAKENING CINEMATIC CARD
+         ================================================================ -->
+    <div id="gajaAwakenCard" class="screen-overlay gaja-awaken-screen hidden">
+      <div class="gaja-burst-backdrop"></div>
+      <div class="gaja-card-modal">
+        <div class="gaja-avatar-frame">
+          <img src="assets/gaja_form.jpg" alt="Gaja Form Titan" class="gaja-avatar-img" />
+        </div>
+        <div class="gaja-text-group">
+          <div class="gaja-mantra">॥ शक्तिः जागृता ॥</div>
+          <h2 class="gaja-title">GAJA FORM AWAKENED!</h2>
+          <p class="gaja-desc">
+            The mortal Guardian channels the supernatural elephant-aspect titan!
+            Devastating ground slams, seismic shockwaves, and unyielding armor unleashed!
+          </p>
+          <div class="gaja-timer-cue">TITAN COMBAT ENGAGED</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ================================================================
+         PAUSE MODAL
+         ================================================================ -->
+    <div id="pauseMenu" class="screen-overlay modal-screen hidden">
+      <div class="modal-box pause-box">
+        <h2 class="modal-title">GAME PAUSED</h2>
+        <div class="menu-buttons-list">
+          <button id="btnResume" class="menu-btn primary-btn">RESUME BATTLE [ESC]</button>
+          <button id="btnRestartLevel" class="menu-btn secondary-btn">RESTART AREA</button>
+          <button id="btnPauseSound" class="menu-btn secondary-btn">TOGGLE SOUND</button>
+          <button id="btnQuitToMenu" class="menu-btn secondary-btn">RETURN TO TITLE</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- ================================================================
+         LEVEL CLEAR MODAL
+         ================================================================ -->
+    <div id="levelClearModal" class="screen-overlay modal-screen hidden">
+      <div class="modal-box victory-box">
+        <div class="sanskrit-mantra">॥ विजयोऽस्तु ॥</div>
+        <h2 class="modal-title victory-title">AREA CLEARED!</h2>
+        <div class="clear-stats-group">
+          <div class="stat-pill">
+            <span class="stat-lbl">TEMPLE INTEGRITY:</span>
+            <span id="clearTempleStat" class="stat-val">100%</span>
+          </div>
+          <div class="stat-pill">
+            <span class="stat-lbl">SCORE:</span>
+            <span id="clearScoreStat" class="stat-val">1,240</span>
+          </div>
+        </div>
+        <div id="powerUnlockedBanner" class="power-unlock-card hidden">
+          <div class="unlock-head">DIVINE BLESSING BESTOWED</div>
+          <div id="unlockTitle" class="unlock-name">NEW POWER: VAYU DASH</div>
+          <div id="unlockDesc" class="unlock-desc">Press [2] or tap Dash to perform a whirlwind dash!</div>
+        </div>
+        <button id="btnNextLevel" class="menu-btn primary-btn">PROCEED TO NEXT AREA</button>
+      </div>
+    </div>
+
+    <!-- ================================================================
+         GAME OVER SCREEN
+         ================================================================ -->
+    <div id="gameOverModal" class="screen-overlay modal-screen hidden">
+      <div class="modal-box gameover-box">
+        <div class="sanskrit-mantra defeat-mantra">॥ मन्दिरं भग्नम् ॥</div>
+        <h2 class="modal-title defeat-title">GAME OVER</h2>
+        <p class="defeat-sub" id="defeatReasonSub">Temple Integrity Failed</p>
+        <div class="clear-stats-group">
+          <div class="stat-pill">
+            <span class="stat-lbl">FINAL SCORE:</span>
+            <span id="defeatScoreStat" class="stat-val">340</span>
+          </div>
+          <div class="stat-pill">
+            <span class="stat-lbl">AREA REACHED:</span>
+            <span id="defeatAreaStat" class="stat-val">AREA 01</span>
+          </div>
+        </div>
+        <div class="menu-buttons-list">
+          <button id="btnRetryLevel" class="menu-btn primary-btn">RESTART</button>
+          <button id="btnDefeatMenu" class="menu-btn secondary-btn">MAIN MENU</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- ================================================================
+         VICTORY SCREEN
+         ================================================================ -->
+    <div id="grandVictoryModal" class="screen-overlay modal-screen hidden">
+      <div class="modal-box grand-victory-box">
+        <div class="sanskrit-mantra gold-mantra">॥ ॐ गं गणपतये नमः ॥</div>
+        <h1 class="grand-victory-title">VICTORY</h1>
+        <p class="grand-victory-sub">
+          The Temple Has Been Protected.<br>The Vighna Lord and his supernatural legions have been vanquished!
+        </p>
+        <div class="grand-victory-avatar-wrap">
+          <img src="assets/area5_final_sanctum.jpg" alt="Final Sanctum Divine Light" class="grand-art-img" />
+        </div>
+        <div class="clear-stats-group">
+          <div class="stat-pill">
+            <span class="stat-lbl">FINAL SCORE:</span>
+            <span id="finalScoreVal" class="stat-val gold-nums">15,800</span>
+          </div>
+          <div class="stat-pill">
+            <span class="stat-lbl">GUARDIAN RANK:</span>
+            <span class="stat-val gold-nums">PARAMA BHAKTA (SUPREME GUARDIAN)</span>
+          </div>
+        </div>
+        <button id="btnGrandRestart" class="menu-btn primary-btn">RESTART</button>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- Unified Standalone Game Engine -->
+  <script src="game.js"></script>
+</body>
+</html>
